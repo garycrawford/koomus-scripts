@@ -15,7 +15,7 @@ image=${1}
 cmd=${*:2}
 
 finish(){
-  local __id=$(cat ${__container_file})
+  local __id=$(cat ${container_file})
   docker stop ${__id}
   docker rm  ${__id}
   echo "container stopped and removed"
