@@ -28,8 +28,7 @@ docker run \
 	--cidfile=${container_file} \
         --detach=true \
 	--publish-all=true \
-	${image} \
-	${cmd}
+	${image}
 
 while [[ -e ${container_file} ]]; do
   $(constat $(cat ${container_file}) | pipe-to-graphite -)
