@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+##
+# Use this to launch a docker container image. Container stats will be sent to graphite
+# using pipe-to-graphite.
+#
+# Author: Gary Crawford
+##
+
+set -o errexit
+set -o xtrace
+set -o nounset
+
+image=${1}
+cmd=${*:2}
+
+finish(){
+  local __id=$(cat ${__container_file})
+  docker stop ${__id}
+  docker rm  ${__id}
+  echo "container stopped and removed"
+}
+trap finish EXIT
+
+container_file="$(mktemp -d)/cidfile"
+
+docker run \
+	--cidfile=${container_file} \
+        --detach=true \
+	--publish-all=true \
+	${image} \
+	${cmd}
+
+while [[ -e ${container_file} ]]; do
+  $(constat $(cat ${container_file}) | pipe-to-graphite -)
+  sleep 10
+done &
+
+docker wait $(cat ${container_file})
